@@ -1,8 +1,2 @@
-# R artifacts
-.Rhistory
-.RData
-.Rproj.user/
-portoedu_back.Rproj
-# Local data storage
-data/
-
+# Created by venv; see https://docs.python.org/3/library/venv.html
+*

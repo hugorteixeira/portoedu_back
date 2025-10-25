@@ -1,90 +1,123 @@
-PortoEdu Mock API (R + plumber)
+# PortoEdu MCP Server
 
-Quick mock database-like API for a hackathon. Stores user data in a `users.csv` (semicolon-separated) and user context lines in per-user text files. Built with the `plumber` package.
+An MCP (Model Context Protocol) server that exposes R service functions as tools for Claude Desktop, Claude Code, and other AI assistants that support MCP.
 
-Run
-- Ensure R is installed and the packages are available:
-  - `install.packages(c("plumber","httr","jsonlite"))`
-- Set an API key (change this for real use):
-  - macOS/Linux: `export PORTOEDU_API_KEY=devkey`
-  - Windows (PowerShell): `$env:PORTOEDU_API_KEY='devkey'`
-- Start the server: `Rscript plumber.R` (or `R -e "pr <- plumber::plumb('plumber.R'); pr$run(host='0.0.0.0', port=8000)"`).
-- Defaults: port `8000`, data dir `data` (override with env var `PORTOEDU_DATA_DIR`).
+## Quick Start
 
-Auth
-- All endpoints require an API key.
-- Send header `X-API-Key: <PORTOEDU_API_KEY>` or use `?api_key=<PORTOEDU_API_KEY>`.
+1. **Install R dependencies**:
+   ```bash
+   Rscript install.R
+   ```
+   Or manually: `install.packages("jsonlite")`
 
-Endpoints
-- GET `/health` → `{ "status": "ok" }`
-- POST `/create_user` params: `name`, `id`, optional `directory`
-- POST `/add_user_data` params: `column_name`, `data`, `name`, `id`, optional `directory`
-- GET `/get_user` params: `name`, `id`, optional `directory`
-- DELETE `/delete_user` params: `name`, `id`, `rm_context` (boolean, default false), optional `directory`
-- POST `/add_user_context` params: `context`, `user`, `id`, optional `directory`
-- POST `/clear_user_context` params: `name`, `id`, optional `directory`
-- GET `/get_user_context` params: `name` or `user`, `id`, optional `directory`
+2. **Configure your AI assistant** - See `SETUP.md` for detailed instructions
 
-Notes
-- The CSV is semicolon-separated and lives at `<directory>/users.csv`.
-- Unknown columns are created on-the-fly by `/add_user_data`.
-- If a user doesn’t exist when adding user data, it is created automatically.
-- Context files live at `<directory>/contexts/<name>_<id>.txt`.
+3. **Start using the tools** in Claude Desktop or Claude Code!
 
-Curl Examples
-```sh
-# Health
-curl -s -H 'X-API-Key: devkey' http://localhost:8000/health
+## Server Implementations
 
-# Create user
-curl -s -X POST "http://localhost:8000/create_user" \
-  -H 'X-API-Key: devkey' \
-  -d name=Alice -d id=123
+Two MCP server versions are included:
 
-# Add user data (creates column if needed)
-curl -s -X POST "http://localhost:8000/add_user_data" \
-  -H 'X-API-Key: devkey' \
-  -d column_name=grade -d data=A -d name=Alice -d id=123
+### mcp_server_stdio.R (Recommended)
+- Uses STDIO transport (standard input/output)
+- Works directly with Claude Desktop and Claude Code
+- Fewer dependencies (only requires `jsonlite`)
+- Best for desktop AI assistant integration
 
-# Get user
-curl -s -H 'X-API-Key: devkey' "http://localhost:8000/get_user?name=Alice&id=123"
+### mcp_server.R
+- Uses HTTP transport via `mcptools` package
+- Requires `mcptools` R package
+- Good for HTTP/API-based integrations
+- Can be accessed via network
 
-# Delete user (keep context)
-curl -s -H 'X-API-Key: devkey' -X DELETE "http://localhost:8000/delete_user?name=Alice&id=123"
+## Available Tools
 
-# Delete user and remove context file
-curl -s -H 'X-API-Key: devkey' -X DELETE "http://localhost:8000/delete_user?name=Alice&id=123&rm_context=true"
+All tools work with CSV-based user storage in the `data/` directory:
 
-# Add user context line
-curl -s -H 'X-API-Key: devkey' -X POST "http://localhost:8000/add_user_context" \
-  -d context="This is a note" -d user=Alice -d id=123
+### User Management
+- **create_user** - Create a new user with name and ID
+- **add_user_data** - Add or update custom data fields for a user
+- **get_user** - Retrieve user information
+- **delete_user** - Remove a user from the system
 
-# Clear user context
-curl -s -H 'X-API-Key: devkey' -X POST "http://localhost:8000/clear_user_context" \
-  -d name=Alice -d id=123
+### Context/Conversation Management
+- **add_user_context** - Append conversation history for a user
+- **clear_user_context** - Clear all conversation history
+- **get_user_context** - Retrieve conversation history
 
-# Get user context lines
-curl -s -H 'X-API-Key: devkey' "http://localhost:8000/get_user_context?name=Alice&id=123"
+For detailed tool parameters and return values, see `SETUP.md`.
+
+## Configuration
+
+### For Claude Desktop
+
+Add to your Claude Desktop config file (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+
+```json
+{
+  "mcpServers": {
+    "portoedu": {
+      "command": "Rscript",
+      "args": ["/absolute/path/to/portoedu_back/mcp_server_stdio.R"],
+      "env": {
+        "PORTOEDU_DATA_DIR": "/absolute/path/to/portoedu_back/data"
+      }
+    }
+  }
+}
 ```
 
-Repo Layout
-- `plumber.R` — router, auth filter, routes
-- `R/service.R` — storage and service functions
-- `client.R` — small R client to test endpoints
-- `data/` — default storage folder (created at runtime)
-- `python/` — Python FastAPI version (see `python/README.md`)
+See `SETUP.md` for complete configuration instructions for all platforms.
 
-Client Example (R)
+## Requirements
+
+- R (version 4.0 or higher)
+- R package: `jsonlite` (required)
+- R package: `mcptools` (optional, only for HTTP server version)
+
+## Environment Variables
+
+- `PORTOEDU_DATA_DIR` - Directory for storing user data and context files (default: `data/`)
+- `MCP_HOST` - Server host for HTTP version (default: `127.0.0.1`)
+- `MCP_PORT` - Server port for HTTP version (default: `3000`)
+
+## Files
+
+- `R/service.R` - Core R service functions
+- `mcp_server_stdio.R` - STDIO-based MCP server (recommended)
+- `mcp_server.R` - HTTP-based MCP server using mcptools
+- `SETUP.md` - Detailed setup and configuration guide
+- `install.R` - Installation helper script
+- `claude_desktop_config.json` - Example Claude Desktop configuration
+
+## Development
+
+To add new R functions as MCP tools:
+
+1. Add your function to `R/service.R`
+2. Register it in the appropriate `mcp_server*.R` file
+3. Restart the MCP server
+4. The new tool will be available to your AI assistant
+
+Example from `mcp_server_stdio.R`:
 ```r
-source("client.R")
-client <- portoedu_client(base_url = "http://localhost:8000", api_key = Sys.getenv("PORTOEDU_API_KEY", "devkey"))
-client$health()
-client$create_user("Alice", 123)
-client$add_user_data("grade", "A", "Alice", 123)
-client$get_user("Alice", 123)
-client$add_user_context("This is a note", "Alice", 123)
-client$get_user_context(name = "Alice", id = 123)
-client$clear_user_context("Alice", 123)
-client$delete_user("Alice", 123, rm_context = TRUE)
-client$disconnect()
+list(
+  name = "my_new_tool",
+  description = "What this tool does",
+  inputSchema = list(
+    type = "object",
+    properties = list(
+      param1 = list(type = "string", description = "Parameter description")
+    ),
+    required = c("param1")
+  )
+)
 ```
+
+## Troubleshooting
+
+See the "Troubleshooting" section in `SETUP.md` for common issues and solutions.
+
+## License
+
+See your repository license.
