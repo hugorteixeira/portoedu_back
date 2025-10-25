@@ -1,0 +1,8 @@
+# R artifacts
+.Rhistory
+.RData
+.Rproj.user/
+portoedu_back.Rproj
+# Local data storage
+data/
+
