@@ -1,6 +1,49 @@
 # PortoEdu MCP Server
 
-An MCP (Model Context Protocol) server that exposes R service functions as tools to other AI assistants that support MCP.
+PortoEdu is the AI coach we are building for teens and young adults in São Paulo’s periferias who juggle classes, bills, and dreams. 💛  
+We align empathetic guidance with real opportunities so every learner can discover purpose, plot tangible next steps, and feel seen.
+
+## Mission & Impact
+- 🎯 **Focus**: students in ensino médio and early-career workers who don’t know how to bridge survival and aspiration.  
+- 🧭 **Promise**: “You’re not alone.” PortoEdu listens, coaches, and connects each learner to the pathways that fit their reality.  
+- 🌍 **Outcome**: reduced dropout, dignified work transitions, and hope that lasts beyond the first job contract.  
+- 🤝 **Allies**: public schools, NGOs, and government programs that will plug into our opportunity graph.
+
+## Who We Serve
+- Youth from vulnerable communities in São Paulo starting or finishing ensino médio.  
+- Teens who had to join the workforce and now need flexible study or training options.  
+- First-job seekers who don’t know which credentials, apprenticeships, or financial aid they qualify for.
+
+## Platform Journey
+
+```mermaid
+flowchart LR
+    Persona(Learner Story)
+    Coach(LLM Coach)
+    DataHub(Opportunity Graph)
+    Matches(Personal Roadmap)
+    Partners(Community & Public Partners)
+
+    Persona --> Coach
+    Coach --> Matches
+    Matches --> Persona
+    Coach --> DataHub
+    DataHub --> Matches
+    Partners --> DataHub
+```
+
+## Backend Vision
+- **Conversational Coach**: a warm LLM persona that captures goals, constraints, and motivation.  
+- **Opportunity Graph**: curated feeds of scholarships, vocational programs, public services, and entry-level jobs.  
+- **Smart Matching**: AI-powered recommendation layer balancing eligibility rules, schedule limits, commute distance, and financial needs.  
+- **Human Bridges**: integration points for mentors, teachers, and counselors to step in when human support matters most.  
+- **Impact Loops**: continuous feedback from learners to improve recommendations and measure longitudinal outcomes.
+
+## About This Repository
+- This is our **experimental backend**—a modern MCP (Model Context Protocol) server written in R.  
+- We built it to be more robust and customizable for richer future integrations, while we iterate quickly for the hackathon.  
+- Today, it hosts the core service functions and a demo CSV-backed datastore so we can demonstrate flows end-to-end.  
+- Tomorrow, it will orchestrate data pipelines, partner APIs, and analytics that power the PortoEdu coach experience.
 
 ## Quick Start
 

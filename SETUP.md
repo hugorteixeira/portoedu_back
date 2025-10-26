@@ -1,6 +1,6 @@
 # PortoEdu MCP Server Setup Guide
 
-This guide will help you set up the PortoEdu MCP server to use your R functions with Claude and OpenAI.
+This guide will help you set up the PortoEdu MCP server to use your R functions with MCP-compatible assistants.
 
 ## Prerequisites
 
@@ -16,7 +16,7 @@ This guide will help you set up the PortoEdu MCP server to use your R functions 
 
 Two versions are available:
 
-1. **mcp_server_stdio.R** (Recommended) - Uses STDIO transport, works directly with Claude Desktop
+1. **mcp_server_stdio.R** (Recommended) - Uses STDIO transport, works directly with MCP clients that read from standard input/output
 2. **mcp_server.R** - Uses mcptools package (requires additional installation)
 
 For most users, use **mcp_server_stdio.R** as it has fewer dependencies.
@@ -40,52 +40,31 @@ Rscript mcp_server.R
 
 ## Configuration
 
-### For Claude Desktop
+### Configure Your MCP Client
 
-1. Locate your Claude Desktop config file:
-   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-   - **Linux**: `~/.config/Claude/claude_desktop_config.json`
+1. Locate your client's MCP configuration file or settings panel. The exact path varies by application—check your assistant's documentation for details.
 
-2. Add the PortoEdu MCP server configuration:
+2. Add the PortoEdu MCP server configuration. Use the STDIO variant for most desktop or CLI clients, or the HTTP variant if your client speaks MCP over HTTP.
 
-```json
-{
-  "mcpServers": {
-    "portoedu": {
-      "command": "Rscript",
-      "args": ["/ABSOLUTE/PATH/TO/portoedu_back/mcp_server.R"],
-      "env": {
-        "PORTOEDU_DATA_DIR": "/ABSOLUTE/PATH/TO/portoedu_back/data"
-      }
-    }
-  }
-}
-```
+   ```json
+   {
+     "mcpServers": {
+       "portoedu": {
+         "command": "Rscript",
+         "args": ["/ABSOLUTE/PATH/TO/portoedu_back/mcp_server_stdio.R"],
+         "env": {
+           "PORTOEDU_DATA_DIR": "/ABSOLUTE/PATH/TO/portoedu_back/data"
+         }
+       }
+     }
+   }
+   ```
 
-**Important**: Replace `/ABSOLUTE/PATH/TO/` with the actual full path to this directory.
+   **Important**: Replace `/ABSOLUTE/PATH/TO/` with the actual full path to this directory.
 
-3. Restart Claude Desktop
+3. Restart or reload your client so it picks up the new configuration.
 
-4. The tools should now appear in Claude's available tools list
-
-### For Claude Code (CLI)
-
-Create or edit `~/.config/claude-code/mcp_settings.json`:
-
-```json
-{
-  "mcpServers": {
-    "portoedu": {
-      "command": "Rscript",
-      "args": ["/ABSOLUTE/PATH/TO/portoedu_back/mcp_server_stdio.R"],
-      "env": {
-        "PORTOEDU_DATA_DIR": "/ABSOLUTE/PATH/TO/portoedu_back/data"
-      }
-    }
-  }
-}
-```
+4. The PortoEdu tools should now be listed among your MCP integrations.
 
 ### For OpenAI and Other AI Assistants
 
@@ -142,7 +121,7 @@ Retrieve conversation history for a user.
 
 ## Usage Examples
 
-Once connected to Claude or OpenAI, you can use natural language:
+Once connected to your AI assistant, you can use natural language:
 
 ```
 "Create a user named Alice with ID 12345"
@@ -159,11 +138,11 @@ Once connected to Claude or OpenAI, you can use natural language:
 - Verify the path to `mcp_server.R` is correct
 - Check that port 3000 is not already in use
 
-### Tools don't appear in Claude
-- Restart Claude Desktop after config changes
+### Tools don't appear in your client
+- Restart your MCP client after config changes
 - Check the config file path is correct
 - Verify JSON syntax is valid (no trailing commas)
-- Check Claude Desktop logs for errors
+- Review your client's logs for configuration errors
 
 ### Permission errors
 - Ensure the `data/` directory exists and is writable
