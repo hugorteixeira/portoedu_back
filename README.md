@@ -103,13 +103,14 @@ graph TB
     G -.feedback.-> B
     H[🤝 Community Partners<br/>Schools • NGOs • Government] -.data.-> D
 
-    style A fill:#FFE5B4
-    style B fill:#B4E5FF
-    style D fill:#FFB4E5
-    style E fill:#E5B4FF
-    style F fill:#B4FFB4
-    style G fill:#FFE5B4
-    style H fill:#FFDAB9
+    style A fill:#FFE5B4,stroke:#333,stroke-width:2px,color:#000
+    style B fill:#B4E5FF,stroke:#333,stroke-width:2px,color:#000
+    style C fill:#fff,stroke:#333,stroke-width:2px,color:#000
+    style D fill:#FFB4E5,stroke:#333,stroke-width:2px,color:#000
+    style E fill:#E5B4FF,stroke:#333,stroke-width:2px,color:#000
+    style F fill:#B4FFB4,stroke:#333,stroke-width:2px,color:#000
+    style G fill:#FFE5B4,stroke:#333,stroke-width:2px,color:#000
+    style H fill:#FFDAB9,stroke:#333,stroke-width:2px,color:#000
 ```
 
 ---
