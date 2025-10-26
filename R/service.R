@@ -1,12 +1,14 @@
-# Core service and storage helpers for PortoEdu API
+# Core service and storage helpers for PortoEdu API.
 
 options(stringsAsFactors = FALSE)
 
 # ---- Storage helpers ----
+# Determine the root directory for data storage, defaulting to PORTOEDU_DATA_DIR or ./data.
 .default_base_dir <- function() {
   Sys.getenv("PORTOEDU_DATA_DIR", unset = "data")
 }
 
+# Ensure we have a usable directory path, creating it on the fly when necessary.
 .safe_dir <- function(directory = NULL) {
   if (is.null(directory) || is.na(directory) || directory == "") {
     directory <- .default_base_dir()
@@ -14,9 +16,10 @@ options(stringsAsFactors = FALSE)
   dir.create(directory, recursive = TRUE, showWarnings = FALSE)
   directory
 }
-
+# Get the canonical path to the CSV file that stores user metadata.
 .users_csv_path <- function(directory) file.path(directory, "users.csv")
 
+# Read users from disk, creating an empty CSV (with headers) if it does not exist yet.
 .read_users <- function(path) {
   if (!file.exists(path)) {
     df <- data.frame(name = character(), id = character(), stringsAsFactors = FALSE)
@@ -35,6 +38,7 @@ options(stringsAsFactors = FALSE)
   df[c(head_cols, other_cols)]
 }
 
+# Persist the users data frame back to disk with a stable column order.
 .write_users <- function(df, path) {
   cols <- names(df)
   head_cols <- intersect(c("name", "id"), cols)
@@ -43,10 +47,12 @@ options(stringsAsFactors = FALSE)
   utils::write.table(df, file = path, sep = ";", row.names = FALSE, col.names = TRUE, quote = TRUE, fileEncoding = "UTF-8")
 }
 
+# Locate the row index for a given (name, id) tuple, using case-insensitive names.
 .find_user_idx <- function(df, name, id) {
   which(tolower(df$name) == tolower(name) & as.character(df$id) == as.character(id))
 }
 
+# Standardise truthy/falsy input coming from MCP arguments.
 .to_bool <- function(x, default = FALSE) {
   if (is.null(x) || (length(x) == 0)) return(default)
   if (is.logical(x)) return(ifelse(is.na(x), default, x))
@@ -55,6 +61,7 @@ options(stringsAsFactors = FALSE)
   xv %in% c("1", "true", "t", "yes", "y", "on")
 }
 
+# Add a row for a user if it does not already exist, returning both the data frame and row index.
 .ensure_user_row <- function(df, name, id) {
   idx <- .find_user_idx(df, name, id)
   if (length(idx) == 0) {
@@ -68,6 +75,7 @@ options(stringsAsFactors = FALSE)
   list(df = df, idx = idx)
 }
 
+# Convert user-supplied values into safe filenames by stripping problematic characters.
 .sanitize_for_filename <- function(x) {
   x <- as.character(x)
   # Allow letters, digits, underscore, hyphen; replace others with underscore
@@ -76,6 +84,7 @@ options(stringsAsFactors = FALSE)
   x
 }
 
+# Compute the path to the context file for a given user, ensuring the contexts directory exists.
 .context_file <- function(directory, name, id) {
   ctx_dir <- file.path(directory, "contexts")
   dir.create(ctx_dir, recursive = TRUE, showWarnings = FALSE)
@@ -85,6 +94,7 @@ options(stringsAsFactors = FALSE)
 
 # ---- Service functions (called by endpoints) ----
 
+# Create a user row (or deduplicate an existing one) and return the stored record.
 svc_create_user <- function(name, id, directory = NULL) {
   base <- .safe_dir(directory)
   path <- .users_csv_path(base)
@@ -107,6 +117,7 @@ svc_create_user <- function(name, id, directory = NULL) {
   list(status = "created", user = as.list(users[idx, , drop = FALSE]))
 }
 
+# Insert or update a custom column for a user and return the updated record.
 svc_add_user_data <- function(column_name, data, name, id, directory = NULL) {
   base <- .safe_dir(directory)
   path <- .users_csv_path(base)
@@ -130,6 +141,7 @@ svc_add_user_data <- function(column_name, data, name, id, directory = NULL) {
   list(status = "updated", user = as.list(users[idx, , drop = FALSE]))
 }
 
+# Retrieve a user row, returning a 404-equivalent error structure when it is not found.
 svc_get_user <- function(name, id, directory = NULL, res = NULL) {
   base <- .safe_dir(directory)
   path <- .users_csv_path(base)
@@ -147,6 +159,7 @@ svc_get_user <- function(name, id, directory = NULL, res = NULL) {
   as.list(users[idx[1], , drop = FALSE])
 }
 
+# Delete a user row and optionally remove their conversation context file.
 svc_delete_user <- function(name, id, rm_context = FALSE, directory = NULL, res = NULL) {
   base <- .safe_dir(directory)
   path <- .users_csv_path(base)
@@ -173,6 +186,7 @@ svc_delete_user <- function(name, id, rm_context = FALSE, directory = NULL, res 
   list(status = "deleted", name = name, id = as.character(id), rm_context = .to_bool(rm_context))
 }
 
+# Append a line of free-text context to the user's history file.
 svc_add_user_context <- function(context, user, id, directory = NULL) {
   base <- .safe_dir(directory)
   ctx_file <- .context_file(base, user, id)
@@ -180,6 +194,7 @@ svc_add_user_context <- function(context, user, id, directory = NULL) {
   list(status = "appended", file = ctx_file)
 }
 
+# Reset a user's context history by deleting the file and recreating an empty one.
 svc_clear_user_context <- function(name, id, directory = NULL) {
   base <- .safe_dir(directory)
   ctx_file <- .context_file(base, name, id)
@@ -188,6 +203,7 @@ svc_clear_user_context <- function(name, id, directory = NULL) {
   list(status = "cleared", file = ctx_file)
 }
 
+# Load the conversation context for a user, supporting both 'name' and 'user' aliases.
 svc_get_user_context <- function(name = NULL, user = NULL, id, directory = NULL) {
   # Support either 'name' or 'user' as the name parameter
   if (is.null(name) || is.na(name) || name == "") {

@@ -1,6 +1,6 @@
 # PortoEdu MCP Server
 
-An MCP (Model Context Protocol) server that exposes R service functions as tools for Claude Desktop, Claude Code, and other AI assistants that support MCP.
+An MCP (Model Context Protocol) server that exposes R service functions as tools to other AI assistants that support MCP.
 
 ## Quick Start
 
@@ -12,7 +12,7 @@ An MCP (Model Context Protocol) server that exposes R service functions as tools
 
 2. **Configure your AI assistant** - See `SETUP.md` for detailed instructions
 
-3. **Start using the tools** in Claude Desktop or Claude Code!
+3. **Start using the tools** with OpenAI.
 
 ## Server Implementations
 
@@ -20,9 +20,8 @@ Two MCP server versions are included:
 
 ### mcp_server_stdio.R (Recommended)
 - Uses STDIO transport (standard input/output)
-- Works directly with Claude Desktop and Claude Code
+- Works directly with OpenAI AgentKit.
 - Fewer dependencies (only requires `jsonlite`)
-- Best for desktop AI assistant integration
 
 ### mcp_server.R
 - Uses HTTP transport via `mcptools` package
@@ -48,10 +47,6 @@ All tools work with CSV-based user storage in the `data/` directory:
 For detailed tool parameters and return values, see `SETUP.md`.
 
 ## Configuration
-
-### For Claude Desktop
-
-Add to your Claude Desktop config file (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
 
 ```json
 {
@@ -88,7 +83,6 @@ See `SETUP.md` for complete configuration instructions for all platforms.
 - `mcp_server.R` - HTTP-based MCP server using mcptools
 - `SETUP.md` - Detailed setup and configuration guide
 - `install.R` - Installation helper script
-- `claude_desktop_config.json` - Example Claude Desktop configuration
 
 ## Development
 
